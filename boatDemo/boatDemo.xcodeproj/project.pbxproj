@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F525E40E27275B7D00CB6AC7 /* SwiftSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F525E40727275B7400CB6AC7 /* SwiftSocket.framework */; };
+		F525E40F27275B7D00CB6AC7 /* SwiftSocket.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F525E40727275B7400CB6AC7 /* SwiftSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F525E41527275E9900CB6AC7 /* MyTcpSocketServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F525E41427275E9900CB6AC7 /* MyTcpSocketServer.swift */; };
 		F5424C4A27123D0500D9B315 /* icon1024.png in Resources */ = {isa = PBXBuildFile; fileRef = F5424C4127123D0500D9B315 /* icon1024.png */; };
 		F5424C4B27123D0500D9B315 /* icon60.png in Resources */ = {isa = PBXBuildFile; fileRef = F5424C4227123D0500D9B315 /* icon60.png */; };
 		F5424C4C27123D0500D9B315 /* icon512.png in Resources */ = {isa = PBXBuildFile; fileRef = F5424C4327123D0500D9B315 /* icon512.png */; };
@@ -27,7 +30,54 @@
 		F5B07D1027099FF900827F21 /* Baloo-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F5B07D0F27099BFB00827F21 /* Baloo-Regular.ttf */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F525E40627275B7400CB6AC7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F525E3FF27275B7400CB6AC7 /* SwiftSocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 377DAA691DCDE40200009697;
+			remoteInfo = "SwiftSocket iOS";
+		};
+		F525E40827275B7400CB6AC7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F525E3FF27275B7400CB6AC7 /* SwiftSocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 377DAA761DCDE45D00009697;
+			remoteInfo = "SwiftSocket macOS";
+		};
+		F525E40A27275B7400CB6AC7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F525E3FF27275B7400CB6AC7 /* SwiftSocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 37454ECA1E06158200800AE5;
+			remoteInfo = "SwiftSocket tvOS";
+		};
+		F525E40C27275B7400CB6AC7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F525E3FF27275B7400CB6AC7 /* SwiftSocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 375C482D1DDC4C56008C701D;
+			remoteInfo = "iOS Example";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F525E41027275B7D00CB6AC7 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F525E40F27275B7D00CB6AC7 /* SwiftSocket.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		F525E3FF27275B7400CB6AC7 /* SwiftSocket.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftSocket.xcodeproj; path = "../../../SwiftFrameworks/SwiftSocket-master/SwiftSocket.xcodeproj"; sourceTree = "<group>"; };
+		F525E41427275E9900CB6AC7 /* MyTcpSocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTcpSocketServer.swift; sourceTree = "<group>"; };
 		F5424C4127123D0500D9B315 /* icon1024.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon1024.png; sourceTree = "<group>"; };
 		F5424C4227123D0500D9B315 /* icon60.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon60.png; sourceTree = "<group>"; };
 		F5424C4327123D0500D9B315 /* icon512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon512.png; sourceTree = "<group>"; };
@@ -55,12 +105,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F525E40E27275B7D00CB6AC7 /* SwiftSocket.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F525E3E9272738EE00CB6AC7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F525E40027275B7400CB6AC7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F525E40727275B7400CB6AC7 /* SwiftSocket.framework */,
+				F525E40927275B7400CB6AC7 /* SwiftSocket.framework */,
+				F525E40B27275B7400CB6AC7 /* SwiftSocket.framework */,
+				F525E40D27275B7400CB6AC7 /* iOS Example.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		F5424C4027123D0500D9B315 /* AppIcon */ = {
 			isa = PBXGroup;
 			children = (
@@ -80,8 +149,10 @@
 		F5557A7B26EE4B6400EF9765 = {
 			isa = PBXGroup;
 			children = (
+				F525E3FF27275B7400CB6AC7 /* SwiftSocket.xcodeproj */,
 				F5557A8626EE4B6400EF9765 /* boatDemo */,
 				F5557A8526EE4B6400EF9765 /* Products */,
+				F525E3E9272738EE00CB6AC7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -96,6 +167,7 @@
 		F5557A8626EE4B6400EF9765 /* boatDemo */ = {
 			isa = PBXGroup;
 			children = (
+				F525E41427275E9900CB6AC7 /* MyTcpSocketServer.swift */,
 				F5557A9C26EE5DF600EF9765 /* AppDelegate.swift */,
 				F5557A8D26EE4B6400EF9765 /* GameScene.swift */,
 				F5557A8F26EE4B6400EF9765 /* GameViewController.swift */,
@@ -121,12 +193,15 @@
 				F5557A8026EE4B6400EF9765 /* Sources */,
 				F5557A8126EE4B6400EF9765 /* Frameworks */,
 				F5557A8226EE4B6400EF9765 /* Resources */,
+				F525E41027275B7D00CB6AC7 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = boatDemo;
+			packageProductDependencies = (
+			);
 			productName = boatDemo;
 			productReference = F5557A8426EE4B6400EF9765 /* boatDemo.app */;
 			productType = "com.apple.product-type.application";
@@ -156,12 +231,49 @@
 			mainGroup = F5557A7B26EE4B6400EF9765;
 			productRefGroup = F5557A8526EE4B6400EF9765 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F525E40027275B7400CB6AC7 /* Products */;
+					ProjectRef = F525E3FF27275B7400CB6AC7 /* SwiftSocket.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				F5557A8326EE4B6400EF9765 /* boatDemo */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F525E40727275B7400CB6AC7 /* SwiftSocket.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftSocket.framework;
+			remoteRef = F525E40627275B7400CB6AC7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F525E40927275B7400CB6AC7 /* SwiftSocket.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftSocket.framework;
+			remoteRef = F525E40827275B7400CB6AC7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F525E40B27275B7400CB6AC7 /* SwiftSocket.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftSocket.framework;
+			remoteRef = F525E40A27275B7400CB6AC7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F525E40D27275B7400CB6AC7 /* iOS Example.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = "iOS Example.app";
+			remoteRef = F525E40C27275B7400CB6AC7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		F5557A8226EE4B6400EF9765 /* Resources */ = {
@@ -194,6 +306,7 @@
 			files = (
 				F5557A9D26EE5DF600EF9765 /* AppDelegate.swift in Sources */,
 				F54BE65B2710AD5500E5ED9C /* DetailsTableViewController.swift in Sources */,
+				F525E41527275E9900CB6AC7 /* MyTcpSocketServer.swift in Sources */,
 				F5557A8E26EE4B6400EF9765 /* GameScene.swift in Sources */,
 				F5557A9026EE4B6400EF9765 /* GameViewController.swift in Sources */,
 			);

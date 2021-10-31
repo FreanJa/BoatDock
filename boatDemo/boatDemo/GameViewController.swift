@@ -9,10 +9,17 @@ import UIKit
 import SpriteKit
 import GameplayKit
 
+
 class GameViewController: UIViewController {
+    
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        
+//        processClientSocket()
         
         if let view = self.view as! SKView? {
             let gameScene = GameScene(size: view.bounds.size)
@@ -25,6 +32,8 @@ class GameViewController: UIViewController {
             view.presentScene(gameScene)
         }
     }
+    
+    
 
     override var shouldAutorotate: Bool {
         return true

@@ -7,6 +7,8 @@
 
 import SpriteKit
 import GameplayKit
+import SwiftSocket
+
 
 struct keyChain {
 //    static let elapsedTime = "ElapsedTime"
@@ -16,8 +18,6 @@ struct keyChain {
     static let afternoonRentNum = "ARentingNumber"
     static let afternoonAverageNum = "AAverageNumber"
     static let rentList = "RentList"
-//    static let availableBoat = "AvaliableBoat"
-//    static let rentedBoat = "RentedBoat"
     static let line1 = "Line1Boat"
     static let line2 = "Line2Boat"
     static let line3 = "Line3Boat"
@@ -64,27 +64,27 @@ func initData() {
     UserDefaults.standard.set([], forKey: keyChain.line3)
     UserDefaults.standard.set([], forKey: keyChain.line4)
     rentInfoCache.save([])
-    var list = UserDefaults.standard.array(forKey: keyChain.line1)!
-    print(list.count)
-    list = UserDefaults.standard.array(forKey: keyChain.line2)!
-    print(list.count)
-    list = UserDefaults.standard.array(forKey: keyChain.line3)!
-    print(list.count)
-    list = UserDefaults.standard.array(forKey: keyChain.line4)!
-    print(list.count)
+//    var list = UserDefaults.standard.array(forKey: keyChain.line1)!
+////    print(list.count)
+//    list = UserDefaults.standard.array(forKey: keyChain.line2)!
+////    print(list.count)
+//    list = UserDefaults.standard.array(forKey: keyChain.line3)!
+////    print(list.count)
+//    list = UserDefaults.standard.array(forKey: keyChain.line4)!
+//    print(list.count)
     
-    var averageTime = UserDefaults.standard.double(forKey: keyChain.morningAverageNum)
-    print("MaverageTime = \(averageTime)")
-    averageTime = UserDefaults.standard.double(forKey: keyChain.afternoonAverageNum)
-    print("AaverageTime = \(averageTime)")
+//    var averageTime = UserDefaults.standard.double(forKey: keyChain.morningAverageNum)
+////    print("MaverageTime = \(averageTime)")
+//    averageTime = UserDefaults.standard.double(forKey: keyChain.afternoonAverageNum)
+//    print("AaverageTime = \(averageTime)")
 }
-
 
 
 class GameScene: SKScene{
     let boatNum = 6
     var background : SKSpriteNode?
     var boat = [SKSpriteNode](repeating: SKSpriteNode(), count: 6)
+    var number = [SKLabelNode](repeating: SKLabelNode(), count: 6)
     var wave: [SKSpriteNode] = []
     var Num01: SKLabelNode?
     var Num02: SKLabelNode?
@@ -98,26 +98,31 @@ class GameScene: SKScene{
     let dataStand = UserDefaults.standard
     var clock: SKLabelNode?
     var updateTime: Double = 0
-//    var rentList: [rentInfo] = []
+    var cheakTime: Double = 0
     
+    var socketServer: MyTcpSocketServer?
+    var socketClient:TCPClient?
+    var textView: UITextView!
 
     
     
-    
     override func didMove(to view: SKView) {
-//        self.availableNum = self.boatNum - self.rentedNum
-//        initData()
+        self.availableNum = self.boatNum - self.rentedNum
+        initData()
         setBackground()
+        socketServer = MyTcpSocketServer()
+        socketServer?.start()
+        
         let dateformatter = DateFormatter()
         dateformatter.dateFormat = "yyyy-MM-dd"
-        print("emmm")
+//        print("emmm")
         if rentInfoCache.get() != nil {
-            print("get")
+//            print("get")
             let rentList = rentInfoCache.get()!
             let lastRent = rentList.last?.startTime
 //            print(lastRent)
             if dateformatter.string(from: lastRent ?? Date()) != dateformatter.string(from: Date()){
-                print("run")
+//                print("run")
                 initData()
 //                setInitBoat()
                 restoreBoat()
@@ -129,17 +134,16 @@ class GameScene: SKScene{
         else {
             restoreBoat()
         }
-//        restoreBoat()
-//        setInitBoat()
+
+        
         setSign()
         setWave()
         addClock()
-//        view.showsPhysics = true
+
         
         self.physicsWorld.gravity = CGVector(dx: 0, dy: -3)
         self.physicsWorld.contactDelegate = self
-        
-//        initData()
+
     }
     
 //    MARK: ---------------------- 初始化 ----------------------
@@ -150,11 +154,8 @@ class GameScene: SKScene{
         self.background?.position = CGPoint(x: frame.width * 0.25, y: frame.height * 0.5)
         self.background?.zPosition = 1
         self.addChild(self.background!)
-
     }
 
-    
-    
 
     
     func updateClock() {
@@ -167,7 +168,6 @@ class GameScene: SKScene{
     func addClock() {
         self.clock = SKLabelNode(fontNamed: "Baloo")
         self.clock?.fontColor = .black
-//        self.clock?.text = timeText
         self.clock?.fontSize = 20
         self.clock?.position = CGPoint(x: frame.width * 0.85, y: frame.height * 0.9)
         self.clock?.zPosition = 1
@@ -190,7 +190,7 @@ class GameScene: SKScene{
     func restoreBoat() {
         let mask = SKTexture(imageNamed: "boatMask01")
         for i in 1...4 {
-            print("Line\(i)")
+//            print("Line\(i)")
             
             if dataStand.array(forKey: "Line1Boat") == nil {
                 initData()
@@ -199,49 +199,73 @@ class GameScene: SKScene{
             let lineList = dataStand.array(forKey: "Line\(i)Boat") as! Array<Int>
             var count = 0
             for num in lineList{
-                print(num)
+//                print(num)
                 let availabeBoatModel = SKSpriteNode(imageNamed: "boat2.png")
                 availabeBoatModel.size = CGSize(width: frame.width * 0.25, height: frame.height * 0.05)
                 let rentedBoatModel = SKSpriteNode(imageNamed: "person2.png")
                 rentedBoatModel.size = CGSize(width: frame.width * 0.25, height: frame.height * 0.08)
-//                print("new finish")
                 self.boat.remove(at: num)
-//                self.boat.insert(availabeBoatModel, at: num)
-//                print("insert finish")
-//                self.boat[num].size = CGSize(width: frame.width * 0.25, height: frame.height * 0.05)
-//                print("size finish")
                 
                 if i == 1 {
-//                    print("ruin")
                     self.boat.insert(availabeBoatModel, at: num)
                     self.boat[num].position = CGPoint(x: frame.width * (0.22 + CGFloat(count) * 0.3 ), y: frame.height * 0.8)
                     self.boat[num].name = "line1"
+                    
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .white
+                    self.number.insert(tmpLable, at: num)
                 }
                 else if i == 2 {
                     self.boat.insert(availabeBoatModel, at: num)
                     self.boat[num].position = CGPoint(x: frame.width * (0.22 + CGFloat(count) * 0.3 ), y: frame.height * 0.7)
                     self.boat[num].name = "line2"
+                    
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .white
+                    self.number.insert(tmpLable, at: num)
                 }
                 else if i == 3 {
                     self.boat.insert(rentedBoatModel, at: num)
                     self.boat[num].position = CGPoint(x: frame.width * (0.22 + CGFloat(count) * 0.3 ), y: frame.height * 0.35)
                     self.boat[num].name = "line3"
+                    
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .white
+                    self.number.insert(tmpLable, at: num)
                 }
                 else {
                     self.boat.insert(rentedBoatModel, at: num)
                     self.boat[num].position = CGPoint(x: frame.width * (0.22 + CGFloat(count) * 0.3 ), y: frame.height * 0.25)
                     self.boat[num].name = "line4"
+                    
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .white
+                    self.number.insert(tmpLable, at: num)
                 }
                 count += 1
                 self.boat[num].zPosition = 5
+                self.number[num].zPosition = 1
+                
                 self.addChild(self.boat[num])
+                self.number[num].verticalAlignmentMode = .center
+                self.number[num].horizontalAlignmentMode = .right
+                self.boat[num].addChild(self.number[num])
+                
                 self.boat[num].physicsBody = SKPhysicsBody(texture: mask, size: CGSize(width: frame.width * 0.3, height: frame.height * 0.1))
                 self.boat[num].physicsBody?.affectedByGravity = true
                 
             }
             
         }
-        print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
+//        print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
         
         
     }
@@ -255,12 +279,11 @@ class GameScene: SKScene{
             let availabeBoatModel = SKSpriteNode(imageNamed: "boat2.png")
             self.boat.append(availabeBoatModel)
             self.boat[i].size = CGSize(width: frame.width * 0.25, height: frame.height * 0.05)
-//            self.boat[i].name = "\(i)"
-            
             if i < 3 {
                 self.boat[i].position = CGPoint(x: frame.width * (0.22 + CGFloat(i) * 0.3 ), y: frame.height * 0.8)
                 GameScene.line1 += 1
                 self.boat[i].name = "line1"
+                
             }
             else{
                 self.boat[i].position = CGPoint(x: frame.width * (0.22 + CGFloat(i - 3) * 0.3 ), y: frame.height * 0.7)
@@ -275,10 +298,10 @@ class GameScene: SKScene{
             
             self.boat[i].physicsBody = SKPhysicsBody(texture: mask, size: CGSize(width: frame.width * 0.3, height: frame.height * 0.1))
             self.boat[i].physicsBody?.affectedByGravity = true
-//            print("line1 = \(self.line1)  line2 = \(self.line2)")
             
         }
     }
+    
     
     
     func setSign() {
@@ -298,12 +321,11 @@ class GameScene: SKScene{
         
         self.availableNum = GameScene.line1 + GameScene.line2
         self.rentedNum = GameScene.line3 + GameScene.line4
-        print("setSign: line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
+//        print("setSign: line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
         
         self.Num01 = SKLabelNode(fontNamed: "Baloo")
         self.Num01?.fontColor = .black
         self.Num01?.fontSize = 25
-//        self.availableNum =
         self.Num01?.text = "\(self.availableNum)"
         self.Num01?.position = CGPoint(x: frame.width * 0.58, y: frame.height * 0.86)
         self.Num01?.zPosition = 8
@@ -354,7 +376,7 @@ class GameScene: SKScene{
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
-        print("boat num = \(self.boat.count)")
+//        print("boat num = \(self.boat.count)")
         
         if var sp = atPoint(location) as? SKSpriteNode{
 //            SKAction  选定船，闪烁（6s）等待再次确认
@@ -376,14 +398,14 @@ class GameScene: SKScene{
             var num = 0
             if let index = self.boat.firstIndex(of: sp){
                 num = index
-                print("key = \(num)")
+//                print("key = \(num)")
             }
             
 //            获取时间戳
 //            let  timeInterval: TimeInterval  = DateInterval.timeIntervalSince1970
 //            let  timeStamp =  Int (timeInterval)
             let timeStamp = Date().timeIntervalSince1970
-            print("时间戳 = \(timeStamp)")
+//            print("时间戳 = \(timeStamp)")
             
             
             
@@ -402,25 +424,18 @@ class GameScene: SKScene{
                 
 
                 if sp.name == "line1" {
-                    print("rent")
+                    processClientSocket(num: num)
+//                    print("rent")
 //                    更新数字
                     var lineList = dataStand.array(forKey: keyChain.line1) as! Array<Int>
                     
-//                    lineList.remove(at: num)
                     if lineList.contains(num) {
-//                        lineList.re
                         if let index = lineList.firstIndex(of: num){
                             lineList.remove(at: index)
                         }
                     }
-//                    print("LineList = \(lineList.count)")
                     dataStand.set(lineList, forKey: keyChain.line1)
                     
-//                    availableNum =
-                    
-                    
-//                    self.rentedNum += 1
-//                    self.Num02?.text = "\(self.rentedNum)"
                     
 //                    销毁原精灵
                     sp.removeFromParent()
@@ -430,7 +445,19 @@ class GameScene: SKScene{
                     sp = SKSpriteNode(imageNamed: "person2.png")
                     sp.size = CGSize(width: frame.width * 0.25, height: frame.height * 0.08)
 //                    GameScene.line1 -= 1             // 该行 精灵个数 减一
-
+                    
+                    
+                    self.number[num].removeFromParent()
+                    self.number.remove(at: num)
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .black
+                    self.number.insert(tmpLable, at: num)
+                    self.number[num].zPosition = 1
+                    self.number[num].verticalAlignmentMode = .center
+                    self.number[num].horizontalAlignmentMode = .right
+                    
 //                    判断放在第几行
                     if (GameScene.line3 < 3){
                         sp.position = CGPoint(x: frame.width * 1.2, y: frame.height * 0.35)
@@ -456,6 +483,8 @@ class GameScene: SKScene{
                     sp.zPosition = 5
                     self.addChild(sp)
                     self.boat.insert(sp, at: num)
+                    self.boat[num].addChild(self.number[num])
+                    
                     
 //                    创建物理体
                     let mask = SKTexture(imageNamed: "boatMask01")
@@ -465,42 +494,45 @@ class GameScene: SKScene{
                     updateLineNum()
                     self.Num01?.text = "\(self.availableNum)"
                     self.Num02?.text = "\(rentedNum)"
-                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
+//                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
                     
                 }
                 
                 else if sp.name == "line2" {
-                    print("rent")
-//                    self.availableNum -= 1
-//                    self.rentedNum += 1
-//                    self.Num01?.text = "\(self.availableNum)"
-//                    self.Num02?.text = "\(self.rentedNum)"
+                    processClientSocket(num: num)
+//                    print("rent")
                     
                     var lineList = dataStand.array(forKey: keyChain.line2) as! Array<Int>
-//                    print("after var \(lineList.count)")
                     if lineList.contains(num) {
-//                        lineList.re
                         if let index = lineList.firstIndex(of: num){
                             lineList.remove(at: index)
                         }
                     }
-//                    lineList.remove(at:num)
-//                    print("after remove \(lineList.count)")
                     dataStand.set(lineList, forKey: keyChain.line2)
                     
-                    
-//                    self.Num01?.text = "\(self.availableNum)"
+
                     
                     sp.removeFromParent()
                     self.boat.remove(at: num)
                     
                     sp = SKSpriteNode(imageNamed: "person2.png")
                     sp.size = CGSize(width: frame.width * 0.25, height: frame.height * 0.08)
-//                    GameScene.line2 -= 1
+                    
+                    
+                    self.number[num].removeFromParent()
+                    self.number.remove(at: num)
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .black
+                    self.number.insert(tmpLable, at: num)
+                    self.number[num].zPosition = 1
+                    self.number[num].verticalAlignmentMode = .center
+                    self.number[num].horizontalAlignmentMode = .right
+
                     
                     if (GameScene.line3 < 3){
                         sp.position = CGPoint(x: frame.width * 1.2, y: frame.height * 0.35)
-//                        GameScene.line3 += 1
                         lineList = dataStand.array(forKey: keyChain.line3) as! Array<Int>
                         lineList.append(num)
                         dataStand.set(lineList, forKey: keyChain.line3)
@@ -522,6 +554,7 @@ class GameScene: SKScene{
                     sp.zPosition = 5
                     self.addChild(sp)
                     self.boat.insert(sp, at: num)
+                    self.boat[num].addChild(self.number[num])
                     
                     let mask = SKTexture(imageNamed: "boatMask01")
                     sp.physicsBody = SKPhysicsBody(texture: mask, size: CGSize(width: frame.width * 0.3, height: frame.height * 0.1))
@@ -530,7 +563,7 @@ class GameScene: SKScene{
                     updateLineNum()
                     self.Num01?.text = "\(self.availableNum)"
                     self.Num02?.text = "\(rentedNum)"
-                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
+//                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
                     
                 }
                 
@@ -539,9 +572,9 @@ class GameScene: SKScene{
                 
                 let dateformatter = DateFormatter()
                 dateformatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                let tmp1: Date = Date(timeIntervalSince1970: timeStamp)
+//                let tmp1: Date = Date(timeIntervalSince1970: timeStamp)
                 
-                print("开始时间 = \(dateformatter.string(from: tmp1))")
+//                print("开始时间 = \(dateformatter.string(from: tmp1))")
                 
                 
             }
@@ -557,7 +590,12 @@ class GameScene: SKScene{
                 
 //                MARK: ----> 结束订单 <----
                 else if sp.name == "line3"{
-                    print("givenBack")
+                    for client in socketServer!.clients{
+                        if client.rentBoatNum == num{
+                            client.removeme()
+                        }
+                    }
+//                    print("givenBack")
 //                    更新数字
                     
                     var lineList = dataStand.array(forKey: keyChain.line3) as! Array<Int>
@@ -581,9 +619,22 @@ class GameScene: SKScene{
                     sp.removeFromParent()
                     self.boat.remove(at: num)
                     
+
+                    
                     sp = SKSpriteNode(imageNamed: "boat2.png")
                     sp.size = CGSize(width: frame.width * 0.25, height: frame.height * 0.05)
 //                    GameScene.line3 -= 1
+                    
+                    self.number[num].removeFromParent()
+                    self.number.remove(at: num)
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .white
+                    self.number.insert(tmpLable, at: num)
+                    self.number[num].zPosition = 1
+                    self.number[num].verticalAlignmentMode = .center
+                    self.number[num].horizontalAlignmentMode = .right
                     
                     if (GameScene.line1 < 3){
                         sp.position = CGPoint(x: frame.width * 1.2, y: frame.height * 1)
@@ -609,6 +660,7 @@ class GameScene: SKScene{
                     sp.zPosition = 5
                     self.addChild(sp)
                     self.boat.insert(sp, at: num)
+                    self.boat[num].addChild(self.number[num])
                     
                     let mask = SKTexture(imageNamed: "boatMask01")
                     sp.physicsBody = SKPhysicsBody(texture: mask, size: CGSize(width: frame.width * 0.3, height: frame.height * 0.1))
@@ -617,25 +669,25 @@ class GameScene: SKScene{
                     updateLineNum()
                     self.Num01?.text = "\(self.availableNum)"
                     self.Num02?.text = "\(rentedNum)"
-                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
+//                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
                     
 //                    MARK: -- 数据写入 --
                     let dateformatter = DateFormatter()
                     dateformatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
                     let tmp1: Date = Date(timeIntervalSince1970: timeStamp)
                     
-                    print("停止时间 = \(dateformatter.string(from: tmp1))")
+//                    print("停止时间 = \(dateformatter.string(from: tmp1))")
                     
                     let startTime: Date = Date(timeIntervalSince1970: self.dataStand.double(forKey: "\(num)"))
                     let endTime: Date = Date(timeIntervalSince1970: timeStamp)
                     
-                    print("start = \(dateformatter.string(from: startTime)); end = \(dateformatter.string(from: endTime))")
+//                    print("start = \(dateformatter.string(from: startTime)); end = \(dateformatter.string(from: endTime))")
                     
                     let elapsedStamp = timeStamp - self.dataStand.double(forKey: "\(num)")
                     let elapsedTime: Date = Date(timeIntervalSince1970: elapsedStamp)
                     
 
-                    print("elapsedTime = \(dateformatter.string(from: elapsedTime))")
+//                    print("elapsedTime = \(dateformatter.string(from: elapsedTime))")
                     
                     
 //                    MARK: ---- 数据 ----
@@ -654,14 +706,14 @@ class GameScene: SKScene{
                     
                     
                     let cal = Calendar.current
+//
+//                    let second = cal.component(.second, from: elapsedTime)
+//                    let minute = cal.component(.minute, from: elapsedTime)
+//                    let hour = cal.component(.hour, from: elapsedTime)
 
-                    let second = cal.component(.second, from: elapsedTime)
-                    let minute = cal.component(.minute, from: elapsedTime)
-                    let hour = cal.component(.hour, from: elapsedTime)
-
-                    print("\(hour):\(minute):\(second)")
+//                    print("\(hour):\(minute):\(second)")
                     
-                    print("hour = \(cal.component(.hour, from: Date(timeIntervalSince1970: timeStamp)))")
+//                    print("hour = \(cal.component(.hour, from: Date(timeIntervalSince1970: timeStamp)))")
                     
                     let longestTime = self.dataStand.double(forKey: keyChain.longestRentTime)
                     if longestTime < elapsedStamp {
@@ -681,8 +733,8 @@ class GameScene: SKScene{
                             averageTime = (averageTime * Double(rentNum - 1) + elapsedStamp) / Double(rentNum)
                             self.dataStand.set(averageTime, forKey: keyChain.morningAverageNum)
                         }
-                        print("Morning")
-                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.morningAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
+//                        print("Morning")
+//                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.morningAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
                     }
 //                    下午
                     else {
@@ -690,24 +742,29 @@ class GameScene: SKScene{
                         self.dataStand.set(rentNum, forKey: keyChain.afternoonRentNum)
                         
                         var averageTime = self.dataStand.double(forKey: keyChain.afternoonAverageNum)
-                        print("averageTime = \(averageTime)")
+//                        print("averageTime = \(averageTime)")
                         if averageTime == 0 {
                             self.dataStand.set(elapsedStamp, forKey: keyChain.afternoonAverageNum)
                         }
                         else{
                             averageTime = (averageTime * Double(rentNum - 1) + elapsedStamp) / Double(rentNum)
-                            print("after/2: \(averageTime)")
+//                            print("after/2: \(averageTime)")
                             self.dataStand.set(averageTime, forKey: keyChain.afternoonAverageNum)
                         }
                         
-                        print("Afternoon")
-                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.afternoonAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
+//                        print("Afternoon")
+//                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.afternoonAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
                     }
                     
                 }
                 
                 else if sp.name == "line4"{
-//                    print("givenBack")
+                    for client in socketServer!.clients{
+                        if client.rentBoatNum == num{
+                            client.removeme()
+                        }
+                    }
+                    
                     var lineList = dataStand.array(forKey: keyChain.line4) as! Array<Int>
                     if lineList.contains(num) {
 //                        lineList.re
@@ -727,9 +784,20 @@ class GameScene: SKScene{
                     sp.removeFromParent()
                     self.boat.remove(at: num)
                     
+                    
                     sp = SKSpriteNode(imageNamed: "boat2.png")
                     sp.size = CGSize(width: frame.width * 0.25, height: frame.height * 0.05)
 //                    GameScene.line4 -= 1
+                    self.number[num].removeFromParent()
+                    self.number.remove(at: num)
+                    let tmpLable = SKLabelNode(text: "⛵️Boat \(num)")
+                    tmpLable.fontName = "Baloo"
+                    tmpLable.fontSize = 14
+                    tmpLable.fontColor = .white
+                    self.number.insert(tmpLable, at: num)
+                    self.number[num].zPosition = 1
+                    self.number[num].verticalAlignmentMode = .center
+                    self.number[num].horizontalAlignmentMode = .right
                     
                     if (GameScene.line1 < 3){
                         sp.position = CGPoint(x: frame.width * 1.2, y: frame.height * 1)
@@ -756,6 +824,7 @@ class GameScene: SKScene{
                     sp.zPosition = 5
                     self.addChild(sp)
                     self.boat.insert(sp, at: num)
+                    self.boat[num].addChild(self.number[num])
                     
                     let mask = SKTexture(imageNamed: "boatMask01")
                     sp.physicsBody = SKPhysicsBody(texture: mask, size: CGSize(width: frame.width * 0.3, height: frame.height * 0.1))
@@ -764,41 +833,29 @@ class GameScene: SKScene{
                     updateLineNum()
                     self.Num01?.text = "\(self.availableNum)"
                     self.Num02?.text = "\(rentedNum)"
-                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
+//                    print("line1 = \(GameScene.line1) line2 = \(GameScene.line2) line3 = \(GameScene.line3) line4 = \(GameScene.line4)")
                     
 //                    MARK: -- 数据写入 --
                     let dateformatter = DateFormatter()
                     dateformatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
                     let tmp1: Date = Date(timeIntervalSince1970: timeStamp)
                     
-                    print("停止时间 = \(dateformatter.string(from: tmp1))")
+//                    print("停止时间 = \(dateformatter.string(from: tmp1))")
                     
                     let startTime: Date = Date(timeIntervalSince1970: self.dataStand.double(forKey: "\(num)"))
                     let endTime: Date = Date(timeIntervalSince1970: timeStamp)
                     
-                    print("start = \(dateformatter.string(from: startTime)); end = \(dateformatter.string(from: endTime))")
+//                    print("start = \(dateformatter.string(from: startTime)); end = \(dateformatter.string(from: endTime))")
                     
                     let elapsedStamp = timeStamp - self.dataStand.double(forKey: "\(num)")
                     let elapsedTime: Date = Date(timeIntervalSince1970: elapsedStamp)
                     
 
-                    print("elapsedTime = \(dateformatter.string(from: elapsedTime))")
+//                    print("elapsedTime = \(dateformatter.string(from: elapsedTime))")
                     
                     
 //                    MARK: ---- 数据 ----
                     let thisRent = rentInfo(boatIndex: num, elapsedTime: elapsedTime, startTime: startTime, endTime: endTime)
-//                    print("run")
-//                    print("thisRent  \(thisRent)")
-//                    var rentArray = [thisRent]
-//                    rentArray.append(thisRent)
-//                    print("=========")
-//                    print("rentArray = \(rentArray)")
-//                    print("=========")
-                    
-                    
-
-                    
-//                    var updateList = self.dataStand.object(forKey: keyChain.rentList) as! Array<rentInfo>
                     
                     if (rentInfoCache.get() == nil){
                         rentInfoCache.save([thisRent])
@@ -808,23 +865,16 @@ class GameScene: SKScene{
                         updateList.append(thisRent)
                         rentInfoCache.save(updateList)
                     }
-                    
-//                    self.dataStand.set(updateList, forKey: keyChain.rentList)
-                    
-//                    print(updateList as! Array)
-                    
-                    
-                    
-                    
+                        
                     let cal = Calendar.current
 
-                    let second = cal.component(.second, from: elapsedTime)
-                    let minute = cal.component(.minute, from: elapsedTime)
-                    let hour = cal.component(.hour, from: elapsedTime)
+//                    let second = cal.component(.second, from: elapsedTime)
+//                    let minute = cal.component(.minute, from: elapsedTime)
+//                    let hour = cal.component(.hour, from: elapsedTime)
 
-                    print("\(hour):\(minute):\(second)")
+//                    print("\(hour):\(minute):\(second)")
                     
-                    print("hour = \(cal.component(.hour, from: Date(timeIntervalSince1970: timeStamp)))")
+//                    print("hour = \(cal.component(.hour, from: Date(timeIntervalSince1970: timeStamp)))")
                     
                     let longestTime = self.dataStand.double(forKey: keyChain.longestRentTime)
                     if longestTime < elapsedStamp {
@@ -844,8 +894,8 @@ class GameScene: SKScene{
                             averageTime = (averageTime * Double(rentNum - 1) + elapsedStamp) / Double(rentNum)
                             self.dataStand.set(averageTime, forKey: keyChain.morningAverageNum)
                         }
-                        print("Morning")
-                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.morningAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
+//                        print("Morning")
+//                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.morningAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
                     }
 //                    下午
                     else {
@@ -862,62 +912,148 @@ class GameScene: SKScene{
                             self.dataStand.set(averageTime, forKey: keyChain.afternoonAverageNum)
                         }
                         
-                        print("Afternoon")
-                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.afternoonAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
+//                        print("Afternoon")
+//                        print("rentNum = \(rentNum)  averageTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.afternoonAverageNum))))  longestTime = \(dateformatter.string(from: Date(timeIntervalSince1970: self.dataStand.double(forKey: keyChain.longestRentTime))))")
                     }
                     
-                    let tmp = rentInfoCache.get()!
-                    print("========================")
-                    for t in tmp{
-                        print("num = \(String(describing: t.boatIndex!)) elapsedTime = \(t.elapsedTime!)")
-//                        print(t.boatIndex!)
-                        
-//                        print(t)
-                        print("-----------------------")
-                    }
+//                    let tmp = rentInfoCache.get()!
+//                    print("========================")
+//                    for t in tmp{
+////                        print("num = \(String(describing: t.boatIndex!)) elapsedTime = \(t.elapsedTime!)")
+////                        print(t.boatIndex!)
+//
+////                        print(t)
+////                        print("-----------------------")
+//                    }
                     
                 }
             }
         }
     }
     
+//    func sendMessage() {
+//        let postInfo: [String: String] = [
+//            "number": "boat3",
+//            "states": "live"
+//        ]
+//
+//        AF.request("http://127.0.0.1:5000/states", method: .post, parameters: postInfo, encoder: JSONParameterEncoder.default).response { response in
+//            debugPrint(response)
+//        }
+//
+//    }
+//
+//
+//
+    
+    
+    //初始化客户端，并连接服务器
+    func processClientSocket(num: Int){
+        socketClient=TCPClient(address: "localhost", port: 8080)
+         
+        DispatchQueue.global(qos: .background).async {
+            //用于读取并解析服务端发来的消息
+            func readmsg()->[String:Any]?{
+                //read 4 byte int as type
+                if let data=self.socketClient!.read(4){
+                    if data.count==4{
+                        let ndata=NSData(bytes: data, length: data.count)
+                        var len:Int32=0
+                        ndata.getBytes(&len, length: data.count)
+                        if let buff=self.socketClient!.read(Int(len)){
+                            let msgd = Data(bytes: buff, count: buff.count)
+                            if let msgi = try? JSONSerialization.jsonObject(with: msgd,
+                                                        options: .mutableContainers) {
+                                return msgi as? [String:Any]
+                            }
+                        }
+                    }
+                }
+                return nil
+            }
+             
+            //连接服务器
+            switch self.socketClient!.connect(timeout: 5) {
+                case .success:
+                    DispatchQueue.main.async {
+                        self.alert(msg: "connect success", after: {}
+                        )
+                    }
+                     
+                    //发送用户名给服务器（这里使用随机生成的）
+                let msgtosend=["cmd":"nickname","nickname":"游客\(Int(arc4random()%1000))","boatNum":"\(num)"]
+                    self.sendMessage(msgtosend: msgtosend)
+                     
+                    //不断接收服务器发来的消息
+                    while true{
+                        if let msg=readmsg(){
+                            DispatchQueue.main.async {
+                                self.processMessage(msg: msg)
+                            }
+                        }else{
+                            DispatchQueue.main.async {
+                                //self.disconnect()
+                            }
+                            //break
+                        }
+                    }
+                
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.alert(msg: error.localizedDescription,after: {}
+                        )
+                    }
+            }
+        }
+    }
+    
+    //发送消息
+    func sendMessage(msgtosend:[String:String]){
+        let msgdata=try? JSONSerialization.data(withJSONObject: msgtosend,
+                                                options: .prettyPrinted)
+        var len:Int32=Int32(msgdata!.count)
+        let data = Data(bytes: &len, count: 4)
+        _ = self.socketClient!.send(data: data)
+        _ = self.socketClient!.send(data:msgdata!)
+    }
+     
+    //处理服务器返回的消息
+    func processMessage(msg:[String:Any]){
+        let cmd:String=msg["cmd"] as! String
+        switch(cmd){
+        case "msg":
+            self.textView.text = self.textView.text +
+                (msg["from"] as! String) + ": " + (msg["content"] as! String) + "\n"
+        default:
+//            print(msg)
+            break
+        }
+    }
+     
+    //弹出消息框
+    func alert(msg:String,after:()->(Void)){
+        let alertController = UIAlertController(title: "",
+                                                message: msg,
+                                                preferredStyle: .alert)
+//        self.present(alertController, animated: true, completion: nil)
+
+        //1.5秒后自动消失
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.5) {
+            alertController.dismiss(animated: false, completion: nil)
+        }
+    }
+    
     
     override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
-//        print(currentTime)
         if currentTime - updateTime >= 1{
             updateTime = currentTime
             updateClock()
         }
-
-//        let dateformatter = DateFormatter()
-//        dateformatter.dateFormat = "yyyy-MM-dd"
-//        let cal = Calendar.current
-//
-//        if rentInfoCache.get() != nil {
-//            let rentList = rentInfoCache.get()!
-//            let lastRent = rentList.last?.startTime
-////            print(lastRent)
-//            if dateformatter.string(from: lastRent ?? Date()) != dateformatter.string(from: Date()){
-//                print("run")
-//                initData()
-////                restoreBoat()
-//            }
-//
-//
-//
-//        }
-
-//        let year = cal.component(.year, from: Date())
-//        let month = cal.component(.month, from: Date())
-//        let day = cal.component(.day, from: Date())
-//        let second = cal.component(.second, from: Date())
-//        let minute = cal.component(.minute, from: Date())
-//        let hour = cal.component(.hour, from: Date())
         
-//        if (second == 0 && minute == 0 && hour == 0) {
-//            initData()
-//        }
+        if currentTime - cheakTime >= 5{
+            cheakTime = currentTime
+            socketServer!.requirCheck()
+        }
 
     }
 }
